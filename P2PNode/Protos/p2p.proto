@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option csharp_namespace = "P2PNode";
+
+service P2PService {
+  rpc SendMessage (MessageRequest) returns (MessageReply);
+}
+
+message MessageRequest {
+  string sender = 1;
+  string message = 2;
+}
+
+message MessageReply {
+  bool success = 1;
+}

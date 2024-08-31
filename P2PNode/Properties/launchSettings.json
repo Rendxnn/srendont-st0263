@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "P2PNode": {
+      "commandName": "Project",
+      "commandLineArgs": "50060"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
