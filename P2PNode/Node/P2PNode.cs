@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using P2PNode.Services;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace P2PNode.Node;
@@ -8,7 +9,6 @@ public class P2PNode
     public readonly int _port;
     public readonly int _id;
 
-    //chord properties
     public string _address { get; set; }
     public string? _predecessor { get; set; }
     public int _predecessorId { get; set; }
@@ -18,6 +18,8 @@ public class P2PNode
     private readonly NodeClient _client;
     private readonly NodeServer _server;
 
+
+    public Dictionary<string, string> _fingerTable;
 
     public P2PNode(int port)
     {
@@ -31,6 +33,10 @@ public class P2PNode
 
         _client = new(this);
         _server = new(this);
+
+        _fingerTable = new();
+
+        FileService.CreateNodeFolder(port);
     }
 
     public async Task Run()
@@ -39,7 +45,7 @@ public class P2PNode
 
         Task clientTask = _client.StartClient();
 
-        Task greetTask = _client.GreetNeighbor();
+        //Task greetTask = _client.GreetNeighbor();
 
         await Task.WhenAll(serverTask, clientTask);
     }

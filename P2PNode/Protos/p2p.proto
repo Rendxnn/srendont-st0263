@@ -10,38 +10,82 @@ service P2PService {
   rpc Notify (NotifyRequest) returns (NotifyReply);
 
   rpc GetPredecessor (GetPredecessorRequest) returns (GetPredecessorReply);
+
+  rpc FindResource (FindResourceRequest) returns (FindResourceReply);
+
+  rpc UpdateFingerTable (FingerTableMessage) returns (UpdateFingerTableReply);
 }
 
-message MessageRequest {
+message MessageRequest 
+{
   string sender = 1;
   string message = 2;
 }
 
-message MessageReply {
+message MessageReply 
+{
   bool success = 1;
 }
 
-message FindSuccessorRequest {
+message FindSuccessorRequest 
+{
   int32 id = 1; 
 }
 
-message FindSuccessorReply {
+message FindSuccessorReply 
+{
   string address = 1; 
   int32 id = 2; 
 }
 
-message NotifyRequest {
+message NotifyRequest 
+{
   string address = 1;
   int32 id = 2;
 }
 
-message NotifyReply {
+message NotifyReply 
+{
   bool success = 1;
 }
 
-message GetPredecessorRequest {}
+message GetPredecessorRequest 
+{
+}
 
-message GetPredecessorReply {
+
+message GetPredecessorReply 
+{
   string address = 1;
   int32 id = 2;
+}
+
+message FindResourceRequest 
+{
+	string fileName = 1;
+	int32 originId = 2;
+}
+
+message FindResourceReply 
+{
+	string fileName = 1;
+	string fileContent = 2;
+	bool success = 3;
+	int32 holderId = 4;
+}
+
+message FingerTablePair 
+{
+	string key = 1;
+	string value = 2;
+}
+
+message FingerTableMessage 
+{
+	repeated FingerTablePair pairs = 1;
+}
+
+message UpdateFingerTableReply
+{
+	bool updated = 1;
 }

@@ -51,5 +51,9 @@ namespace P2PNode.Services
             });
         }
 
+        //public override Task<FindResourceReply> FindResource(FindResourceRequest request, ServerCallContext context)
+        //{
+            
+        //}
     }
 }

@@ -120,6 +120,7 @@ namespace P2PNode.Node
 
                 string neighborName = neighbor == 0 ? "predecessor" : "successor";
                 string? neighborAddress = neighbor == 0 ? _node._predecessor : _node._successor;
+
                 using var channel = GrpcChannel.ForAddress($"http://{neighborAddress}");
                 Client client = new(channel);
 
@@ -135,5 +136,10 @@ namespace P2PNode.Node
                 }
             }
         }
+
+        //public async Task SearchResource(string resourceName)
+        //{
+
+        //}
     }
 }
