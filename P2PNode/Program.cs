@@ -6,7 +6,9 @@ class Program
     {
         if (args.Length != 1 || !int.TryParse(args[0], out int portNumber))
         {
-            throw new ArgumentException("args: portNumber");
+            Console.WriteLine("Usage: -- <portNumber>");
+
+            return;
         }
 
         Node node = new(portNumber);

@@ -4,6 +4,12 @@ option csharp_namespace = "P2PNode";
 
 service P2PService {
   rpc SendMessage (MessageRequest) returns (MessageReply);
+
+  rpc FindSuccessor (FindSuccessorRequest) returns (FindSuccessorReply);
+
+  rpc Notify (NotifyRequest) returns (NotifyReply);
+
+  rpc GetPredecessor (GetPredecessorRequest) returns (GetPredecessorReply);
 }
 
 message MessageRequest {
@@ -13,4 +19,29 @@ message MessageRequest {
 
 message MessageReply {
   bool success = 1;
+}
+
+message FindSuccessorRequest {
+  int32 id = 1; 
+}
+
+message FindSuccessorReply {
+  string address = 1; 
+  int32 id = 2; 
+}
+
+message NotifyRequest {
+  string address = 1;
+  int32 id = 2;
+}
+
+message NotifyReply {
+  bool success = 1;
+}
+
+message GetPredecessorRequest {}
+
+message GetPredecessorReply {
+  string address = 1;
+  int32 id = 2;
 }
