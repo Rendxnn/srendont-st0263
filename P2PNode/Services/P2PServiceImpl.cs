@@ -1,5 +1,8 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
+using P2PNode.Extensions;
+using Client = P2PNode.P2PService.P2PServiceClient;
+
 namespace P2PNode.Services
 {
     public class P2PServiceImpl : P2PService.P2PServiceBase
@@ -20,12 +23,12 @@ namespace P2PNode.Services
         {
             if (_node.IsBetween(request.Id, _node._predecessorId, _node._id))
             {
-                return new FindSuccessorReply { Address = _node._address, Id = _node._id };
+                return new FindSuccessorReply { Address = _node._address, Id = _node._id, FingerTable = _node._fingerTable.ConvertToFTMessage(_node._id) };
             }
             else
             {
                 using var channel = GrpcChannel.ForAddress($"http://{_node._successor}");
-                var client = new P2PService.P2PServiceClient(channel);
+                Client client = new(channel);
                 return await client.FindSuccessorAsync(request);
             }
         }
@@ -53,7 +56,18 @@ namespace P2PNode.Services
 
         //public override Task<FindResourceReply> FindResource(FindResourceRequest request, ServerCallContext context)
         //{
-            
+
         //}
+
+        public override Task<UpdateFingerTableReply> UpdateFingerTable(FingerTableMessage request, ServerCallContext context)
+        {
+            _node._fingerTable = request.Pairs.ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            Console.WriteLine("Finger table has been updated");
+            Console.WriteLine(_node._fingerTable.Count);
+
+            return Task.FromResult(new UpdateFingerTableReply { Updated = true });
+
+        }
     }
 }

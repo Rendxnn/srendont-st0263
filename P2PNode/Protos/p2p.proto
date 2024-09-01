@@ -36,6 +36,7 @@ message FindSuccessorReply
 {
   string address = 1; 
   int32 id = 2; 
+  FingerTableMessage fingerTable = 3;
 }
 
 message NotifyRequest 
@@ -63,7 +64,6 @@ message GetPredecessorReply
 message FindResourceRequest 
 {
 	string fileName = 1;
-	int32 originId = 2;
 }
 
 message FindResourceReply 
@@ -71,7 +71,6 @@ message FindResourceReply
 	string fileName = 1;
 	string fileContent = 2;
 	bool success = 3;
-	int32 holderId = 4;
 }
 
 message FingerTablePair 
@@ -82,7 +81,8 @@ message FingerTablePair
 
 message FingerTableMessage 
 {
-	repeated FingerTablePair pairs = 1;
+	int32 senderId = 1;
+	repeated FingerTablePair pairs = 2;
 }
 
 message UpdateFingerTableReply

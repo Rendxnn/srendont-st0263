@@ -1,5 +1,6 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
+using P2PNode.Extensions;
 using Client = P2PNode.P2PService.P2PServiceClient;
 
 namespace P2PNode.Node
@@ -30,6 +31,7 @@ namespace P2PNode.Node
                     if (existingNodeAddress == null) continue;
 
                     await Join(existingNodeAddress);
+                    await UpdateRingFingerTable();
                 }
 
                 else
@@ -38,6 +40,7 @@ namespace P2PNode.Node
                     _node._predecessorId = -1;
                     _node._successor = _node._address;
                     _node._successorId = _node._id;
+                    _node._fingerTable.Add($"{_node._id},-1", _node._address);
                     Console.WriteLine("First node added to the ring");
                 }
 
@@ -53,12 +56,15 @@ namespace P2PNode.Node
         {
             try
             {
-                using GrpcChannel? channel = GrpcChannel.ForAddress($"http://{existingNodeAddres}");
-                Client client = new(channel);
+                using GrpcChannel? existingNodeChannel = GrpcChannel.ForAddress($"http://{existingNodeAddres}");
+                Client existingNodeClient = new(existingNodeChannel);
 
-                FindSuccessorReply response = await client.FindSuccessorAsync(new FindSuccessorRequest { Id = _node._id });
-                _node._successor = response.Address;
-                _node._successorId = response.Id;
+                FindSuccessorReply successorResponse = await existingNodeClient.FindSuccessorAsync(new FindSuccessorRequest { Id = _node._id });
+
+                _node._successor = successorResponse.Address;
+                _node._successorId = successorResponse.Id;
+                _node._fingerTable = successorResponse.FingerTable.Pairs.ToDictionary(pair => pair.Key, pair => pair.Value);
+                _node._fingerTable.AddToFT(_node._id, _node._address);
 
                 Console.WriteLine($"Node {_node._id} has been added to the ring. Successor {_node._successorId}. Predecesor {_node._predecessorId}");
             }
@@ -110,6 +116,19 @@ namespace P2PNode.Node
             }
         }
 
+        public async Task UpdateRingFingerTable()
+        {
+            foreach (KeyValuePair<string, string> pair in _node._fingerTable)
+            {
+                int pairId = int.Parse(pair.Key.Split(",").ToList()[0]);
+                if (pairId == _node._id) continue;
+                string pairAddress = pair.Value;
+                using GrpcChannel? successorChannel = GrpcChannel.ForAddress($"http://{pairAddress}");
+                Client successorClient = new(successorChannel);
+                UpdateFingerTableReply updateResponse = await successorClient.UpdateFingerTableAsync(_node._fingerTable.ConvertToFTMessage(_node._id));
+            }
+        }
+
         public async Task GreetNeighbor()
         {
             while (true)
@@ -136,10 +155,5 @@ namespace P2PNode.Node
                 }
             }
         }
-
-        //public async Task SearchResource(string resourceName)
-        //{
-
-        //}
     }
 }
