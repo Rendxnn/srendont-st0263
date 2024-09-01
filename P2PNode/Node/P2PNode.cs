@@ -5,7 +5,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks.Dataflow;
-
+using Client = P2PNode.P2PService.P2PServiceClient;
 
 namespace P2PNode.Node;
 
@@ -39,6 +39,8 @@ public class P2PNode
 
         Task clientTask = StartClient();
 
+        Task greetTask = GreetNeighbor();
+
         await Task.WhenAll(serverTask, clientTask);
     } 
 
@@ -66,9 +68,11 @@ public class P2PNode
 
     public async Task StartClient()
     {
-
         while (true)
         {
+            Console.WriteLine($"Node created with id: {_id}");
+
+
             Console.WriteLine("Join into a existing ring? y/n");
             string? joinResponse = Console.ReadLine();
             if (joinResponse?.ToLower() == "y") 
@@ -91,7 +95,7 @@ public class P2PNode
             }
 
             while (true)
-            {
+            { 
                 await Stabilize();
                 await Task.Delay(5000);
             }
@@ -104,9 +108,9 @@ public class P2PNode
         try
         {
             using GrpcChannel? channel = GrpcChannel.ForAddress($"http://{existingNodeAddres}");
-            P2PService.P2PServiceClient client = new(channel);
+            Client client = new(channel);
 
-            var response = await client.FindSuccessorAsync(new FindSuccessorRequest { Id = _id });
+            FindSuccessorReply response = await client.FindSuccessorAsync(new FindSuccessorRequest { Id = _id });
             _successor = response.Address;
             _successorId = response.Id;
 
@@ -123,40 +127,31 @@ public class P2PNode
         try
         {
             using var channel = GrpcChannel.ForAddress($"http://{_successor}");
-            var client = new P2PService.P2PServiceClient(channel);
+            Client client = new(channel);
 
-            // Obtener el predecesor del sucesor
             var response = await client.GetPredecessorAsync(new GetPredecessorRequest());
 
             if (!string.IsNullOrEmpty(response.Address))
             {
-                // Verificar si el predecesor del sucesor es un nodo más cercano a este nodo
                 if (IsBetween(response.Id, _id, _successorId))
                 {
                     _successor = response.Address;
                     _successorId = response.Id;
-                    Console.WriteLine($"Actualizado sucesor a {_successorId} ({_successor})");
+                    Console.WriteLine($"Updating successor to {_successorId} ({_successor})");
                 }
             }
-
-            // Notificar al sucesor sobre este nodo
             var notifyResponse = await client.NotifyAsync(new NotifyRequest { Address = _address, Id = _id });
-            if (notifyResponse.Success)
-            {
-                Console.WriteLine($"Notificado a {_successorId} ({_successor}) sobre la presencia de este nodo.");
-            }
         }
         catch (RpcException rpcEx)
         {
-            Console.WriteLine($"RPC Error durante la estabilización: {rpcEx.Status.Detail}");
+            Console.WriteLine($"RPC Error while stabilizing: {rpcEx.Status.Detail}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error en estabilización: {ex.Message}");
+            Console.WriteLine($"Error while stabilizing: {ex.Message}");
         }
     }
 
-    //// Método para verificar si un ID está entre dos valores en el anillo
     public bool IsBetween(int id, int start, int end)
     {
         if (start < end)
@@ -168,4 +163,32 @@ public class P2PNode
             return id > start || id < end;
         }
     }
+
+    private async Task GreetNeighbor()
+    {
+        while (true)
+        {
+            Console.WriteLine("0. Greet predecessor");
+            Console.WriteLine("1. Greet successor");
+            int.TryParse(Console.ReadLine(), out int neighbor);
+
+            string neighborName = neighbor == 0 ? "predecessor" : "successor";
+            string? neighborAddress = neighbor == 0 ? _predecessor : _successor;
+            using var channel = GrpcChannel.ForAddress($"http://{neighborAddress}");
+            Client client = new(channel);
+
+            MessageReply response = await client.SendMessageAsync(new MessageRequest { Message = $"Hello {neighborName}!", Sender = _id.ToString() });
+
+            if (response.Success)
+            {
+                Console.WriteLine($"Succesfully sent to {neighborName}");
+            }
+            else
+            {
+                Console.WriteLine("Unsuccesfull");
+            }
+        }
+    }
+
+
 }
