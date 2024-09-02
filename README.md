@@ -1,6 +1,7 @@
 # ST0263 - TÓPICOS ESPECIALES EN TELEMÁTICA
 #
 ## Estudiante: Samuel Rendón Trujillo - srendont@eafit.edu.co
+## Video del proyecto: https://youtu.be/9G0vz8kZ7UM (EL README SE ACTUALIZÓ EL DÍA 02/09/2024 PARA AÑADIR EL LINK DEL VIDEO ÚNICAMENTE, DEBIDO AL PLAZO ACORDADO EN CLASE Y DADO QUE EL BUZÓN EN INTERACTIVA YA SE ENCONTRABA VENCIDO)
 ## Profesor: Alvaro Enrique Ospina Sanjuan - aeospinas@eafit.edu.co
 
 
