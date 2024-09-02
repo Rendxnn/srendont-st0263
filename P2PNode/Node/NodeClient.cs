@@ -1,6 +1,8 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
 using P2PNode.Extensions;
+using P2PNode.Services;
+using System.Net.Mail;
 using Client = P2PNode.P2PService.P2PServiceClient;
 
 namespace P2PNode.Node
@@ -129,31 +131,73 @@ namespace P2PNode.Node
             }
         }
 
-        public async Task GreetNeighbor()
+        public async Task HandleResources()
         {
             while (true)
             {
-                Console.WriteLine("0. Greet predecessor");
-                Console.WriteLine("1. Greet successor");
-                int.TryParse(Console.ReadLine(), out int neighbor);
+                Console.WriteLine("0. Upload Reosurce");
+                Console.WriteLine("1. Find Reosurce");
 
-                string neighborName = neighbor == 0 ? "predecessor" : "successor";
-                string? neighborAddress = neighbor == 0 ? _node._predecessor : _node._successor;
+                string? choice = Console.ReadLine();
 
-                using var channel = GrpcChannel.ForAddress($"http://{neighborAddress}");
-                Client client = new(channel);
-
-                MessageReply response = await client.SendMessageAsync(new MessageRequest { Message = $"Hello {neighborName}!", Sender = _node._id.ToString() });
-
-                if (response.Success)
+                if (choice == "0")
                 {
-                    Console.WriteLine($"Succesfully sent to {neighborName}");
-                }
-                else
-                {
-                    Console.WriteLine("Unsuccesfull");
+                    await UploadResource();
                 }
             }
+        }
+
+        public async Task UploadResource()
+        {
+            Console.WriteLine("Resource title: (include extension)");
+            string? title = Console.ReadLine();
+
+            Console.WriteLine("Reosurce content: ");
+            string? content = Console.ReadLine();
+
+
+            if (title == null || content == null)
+            {
+                Console.WriteLine("Both title and content are mandatory");
+                return;
+            }
+
+            int fileCode = P2PServiceImpl.GenerateId(title);
+
+            string responsibleAddress = FindResponsibleNode(fileCode);
+
+            Console.WriteLine("responsible node" + responsibleAddress);
+
+            if (responsibleAddress == _node._address)
+            {
+                FileService.SaveFile(_node._port, title, content);
+                return;
+            }
+            using GrpcChannel? responsibleChannel = GrpcChannel.ForAddress($"http://{responsibleAddress}");
+            Client resposibleClient = new(responsibleChannel);
+            UploadResourceReply uploadResourceReply = await resposibleClient.UploadResourceAsync(new UploadResourceRequest { Content = content, Title = title });
+
+            return;
+        }
+
+        private string FindResponsibleNode(int fileHash)
+        {
+            foreach (var pair in _node._fingerTable)
+            {
+                string range = pair.Key;
+                string nodeAddress = pair.Value;
+
+                int[] rangeValues = range.Split(",").Select(x => int.Parse(x)).ToArray();
+                int idMin = rangeValues[0];
+                int idMax = rangeValues[1];
+
+                if ((fileHash > idMin && fileHash <= idMax) || (idMax == -1 && fileHash > idMin))
+                {
+                    return nodeAddress;
+                }
+            }
+
+            return "";
         }
     }
 }

@@ -2,7 +2,7 @@
   "profiles": {
     "P2PNode": {
       "commandName": "Project",
-      "commandLineArgs": "50060"
+      "commandLineArgs": "50051"
     },
     "Container (Dockerfile)": {
       "commandName": "Docker"

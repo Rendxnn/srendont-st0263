@@ -25,7 +25,7 @@ public class P2PNode
     {
         _port = port;
         _address = $"localhost:{port}";
-        _id = GenerateId(_address);
+        _id = P2PServiceImpl.GenerateId(_address);
         _predecessor = null;
         _predecessorId = -1;
         _successor = _address;
@@ -45,18 +45,9 @@ public class P2PNode
 
         Task clientTask = _client.StartClient();
 
-        //Task greetTask = _client.GreetNeighbor();
+        Task uploadFileTask = _client.HandleResources();
 
         await Task.WhenAll(serverTask, clientTask);
-    }
-
-    private int GenerateId(string input)
-    {
-        using var sha1 = SHA1.Create();
-
-        var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-        return BitConverter.ToInt32(hash, 0) & 0x7FFFFFFF;
     }
 
     public bool IsBetween(int id, int start, int end)

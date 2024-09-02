@@ -39,7 +39,7 @@
 
             if (newId < min)
             {
-                dict.Add($"{newId},{min}", newAddress);
+                dict.Add($"{0},{min}", newAddress);
                 return true;
             }
 

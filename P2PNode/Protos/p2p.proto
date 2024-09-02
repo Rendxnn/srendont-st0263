@@ -11,6 +11,8 @@ service P2PService {
 
   rpc GetPredecessor (GetPredecessorRequest) returns (GetPredecessorReply);
 
+  rpc UploadResource (UploadResourceRequest) returns (UploadResourceReply);
+
   rpc FindResource (FindResourceRequest) returns (FindResourceReply);
 
   rpc UpdateFingerTable (FingerTableMessage) returns (UpdateFingerTableReply);
@@ -88,4 +90,15 @@ message FingerTableMessage
 message UpdateFingerTableReply
 {
 	bool updated = 1;
+}
+
+message UploadResourceRequest 
+{
+	string title = 1;
+	string content = 2;
+}
+
+message UploadResourceReply 
+{
+	bool uploaded = 1;
 }

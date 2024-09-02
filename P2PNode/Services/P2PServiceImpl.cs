@@ -1,6 +1,8 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
 using P2PNode.Extensions;
+using System.Security.Cryptography;
+using System.Text;
 using Client = P2PNode.P2PService.P2PServiceClient;
 
 namespace P2PNode.Services
@@ -68,6 +70,22 @@ namespace P2PNode.Services
 
             return Task.FromResult(new UpdateFingerTableReply { Updated = true });
 
+        }
+
+        public override Task<UploadResourceReply> UploadResource(UploadResourceRequest request, ServerCallContext context)
+        {
+            FileService.SaveFile(_node._port, request.Title, request.Content);
+
+            return Task.FromResult(new UploadResourceReply { Uploaded = true });
+        }
+
+        public static int GenerateId(string input)
+        {
+            using var sha1 = SHA1.Create();
+
+            var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+            return BitConverter.ToInt32(hash, 0) & 0x7FFFFFFF;
         }
     }
 }
