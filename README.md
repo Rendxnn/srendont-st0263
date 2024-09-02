@@ -18,7 +18,7 @@ Se escogió esta tecnología debido al conocimiento previo de uso de esta y el u
 ## 1.1. Aspectos logrados
 
 Se cumplió con la implementación de una red P2P funcional con los siguientes componentes:
-- Nodos independiente que se pueden unir a la red conociendo la dirección deun nodo perteneciente a la red
+- Nodos independientes que se pueden unir a la red conociendo la dirección de un nodo perteneciente a la red
 - Nodos concurentes que actúan como Cliente y Servidor dentro de la red.
 - Comunicación entre nodos utilizando gRPC.
 - Creación de recursos (archivos) y almacenado de estos en la red.
