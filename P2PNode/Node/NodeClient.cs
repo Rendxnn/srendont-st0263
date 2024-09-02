@@ -135,8 +135,8 @@ namespace P2PNode.Node
         {
             while (true)
             {
-                Console.WriteLine("0. Upload Reosurce");
-                Console.WriteLine("1. Find Reosurce");
+                Console.WriteLine("0. Upload Resource");
+                Console.WriteLine("1. Find Resource");
 
                 string? choice = Console.ReadLine();
 
@@ -144,7 +144,43 @@ namespace P2PNode.Node
                 {
                     await UploadResource();
                 }
+                if (choice == "1") 
+                {
+                    await FindResource();
+                }
+
             }
+        }
+
+        public async Task FindResource()
+        {
+            Console.WriteLine("Resource title: (include extension)");
+            string? title = Console.ReadLine();
+
+            if (title == null)
+            {
+                Console.WriteLine("Title is mandatory");
+                return;
+            }
+
+            int fileCode = P2PServiceImpl.GenerateId(title);
+
+            string responsibleAddress = FindResponsibleNode(fileCode);
+
+            if (responsibleAddress == _node._address)
+            {
+                FileService.SearchFile(_node._port, title);
+                return;
+            }
+
+            using GrpcChannel? responsibleChannel = GrpcChannel.ForAddress($"http://{responsibleAddress}");
+            Client resposibleClient = new(responsibleChannel);
+            FindResourceReply findResourceReply = await resposibleClient.FindResourceAsync(new FindResourceRequest { FileName = title });
+
+            Console.WriteLine($"File title: {findResourceReply.FileName}");
+            Console.WriteLine($"File content: {findResourceReply.FileContent}");
+
+            return;
         }
 
         public async Task UploadResource()
@@ -165,8 +201,6 @@ namespace P2PNode.Node
             int fileCode = P2PServiceImpl.GenerateId(title);
 
             string responsibleAddress = FindResponsibleNode(fileCode);
-
-            Console.WriteLine("responsible node" + responsibleAddress);
 
             if (responsibleAddress == _node._address)
             {

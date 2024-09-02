@@ -14,7 +14,7 @@ public static class FileService
         Directory.CreateDirectory(resourcesFolder);
     }
 
-    public static async Task<string> SearchFile(int port, string fileName)
+    public static string SearchFile(int port, string fileName)
     {
         string filePath = Path.Combine(Environment.CurrentDirectory, "Resources", port.ToString(), fileName);
 
@@ -22,7 +22,7 @@ public static class FileService
 
         if (File.Exists(filePath))
         {
-            fileContent = await File.ReadAllTextAsync(filePath);
+            fileContent = File.ReadAllText(filePath);
         }
 
         return fileContent;

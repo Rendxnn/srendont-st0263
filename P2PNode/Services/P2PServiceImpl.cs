@@ -56,10 +56,19 @@ namespace P2PNode.Services
             });
         }
 
-        //public override Task<FindResourceReply> FindResource(FindResourceRequest request, ServerCallContext context)
-        //{
+        public override Task<FindResourceReply> FindResource(FindResourceRequest request, ServerCallContext context)
+        {
+            string fileContent = FileService.SearchFile(_node._port, request.FileName);
 
-        //}
+            return Task.FromResult(new  FindResourceReply { FileName = request.FileName, FileContent = fileContent });
+        }
+
+        public override Task<UploadResourceReply> UploadResource(UploadResourceRequest request, ServerCallContext context)
+        {
+            FileService.SaveFile(_node._port, request.Title, request.Content);
+
+            return Task.FromResult(new UploadResourceReply { Uploaded = true });
+        }
 
         public override Task<UpdateFingerTableReply> UpdateFingerTable(FingerTableMessage request, ServerCallContext context)
         {
@@ -70,13 +79,6 @@ namespace P2PNode.Services
 
             return Task.FromResult(new UpdateFingerTableReply { Updated = true });
 
-        }
-
-        public override Task<UploadResourceReply> UploadResource(UploadResourceRequest request, ServerCallContext context)
-        {
-            FileService.SaveFile(_node._port, request.Title, request.Content);
-
-            return Task.FromResult(new UploadResourceReply { Uploaded = true });
         }
 
         public static int GenerateId(string input)
