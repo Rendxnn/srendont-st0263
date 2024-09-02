@@ -75,7 +75,6 @@ namespace P2PNode.Services
             _node._fingerTable = request.Pairs.ToDictionary(pair => pair.Key, pair => pair.Value);
 
             Console.WriteLine("Finger table has been updated");
-            Console.WriteLine(_node._fingerTable.Count);
 
             return Task.FromResult(new UpdateFingerTableReply { Updated = true });
 
